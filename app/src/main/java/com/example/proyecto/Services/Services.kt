@@ -1,6 +1,14 @@
 package com.example.proyecto.Services
 
 import android.R
+import com.example.proyecto.Models.HostelList
+import com.example.proyecto.Models.HostelServicesList
+import com.example.proyecto.Models.MyHostelReservationList
+import com.example.proyecto.Models.MyServiceReservationList
+import com.example.proyecto.Models.NewServiceReservation
+import com.example.proyecto.Models.NewHostelReservation
+import com.example.proyecto.Models.VerificationLogin
+import com.example.proyecto.Models.VerificationOTP
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -12,16 +20,8 @@ import retrofit2.http.Headers
 import retrofit2.http.POST
 
 
-data class Login(
-    val phone: String
-)
-
 data class LoginResponse(
     val token: String // or whatever your API returns
-)
-
-data class  OTPcode(
-    val OTP: String
 )
 
 data class APIToken(
@@ -29,16 +29,52 @@ data class APIToken(
 )
 interface Services {
 
-    @GET("quotes")
-    suspend fun getQuotes()
-
-    @POST("Login")
+    // Send phone number for user verification and receive OTP
+    @POST("/apiusers/phone-verification/send/")
     @Headers("No-Auth: true")
-    suspend fun verifylogin(@Body request: Login): LoginResponse
+    suspend fun verifyLogin(@Body request: VerificationLogin): LoginResponse
 
-    @POST("OTP")
+    // Verify OTP
+    @POST("/apiusers/phone-verification/verify/")
     @Headers("No-Auth: true")
-    suspend  fun verifyotp(@Body request: OTPcode): APIToken
+    suspend  fun verifyOtp(@Body request: VerificationOTP): APIToken
+
+    // Fetch hostels
+    @GET("/apialbergues/hostels/")
+    @Headers("No-Auth: false")
+    suspend fun getHostels(): HostelList
+
+    // Fetch user's hostel reservations
+    @GET("/apialbergues/reservations/my_reservations/")
+    @Headers("No-Auth: false")
+    suspend fun getMyReservations(): MyHostelReservationList
+
+    //Create a new hostel reservation
+    @POST("/apialbergues/reservations/")
+    @Headers("No-Auth: false")
+    suspend fun createHostelReservation(@Body request: NewHostelReservation): NewHostelReservation
+
+    // Fetch Hostel Services
+    @GET("/apiservices/hostel-services/")
+    @Headers("No-Auth: false")
+    suspend fun getHostelServices(): HostelServicesList
+
+    // Fetch user's service reservations
+    @GET("/apiservices/reservations/my_reservations/")
+    @Headers("No-Auth: false")
+    suspend fun getMyServiceReservations(): MyServiceReservationList
+
+    // Fetch user's upcoming service reservations 24 hours
+    @GET("/apiservices/reservations/upcoming/")
+    @Headers("No-Auth: false")
+    suspend fun getMyUpcomingServiceReservations(): MyServiceReservationList
+
+    //Create a new service reservation
+    @POST("/apiservices/reservations/")
+    @Headers("No-Auth: false")
+    suspend fun createServiceReservation(@Body request: NewServiceReservation): NewServiceReservation
+
+
 
     companion object {
         private val logging = HttpLoggingInterceptor().apply {
@@ -68,7 +104,7 @@ interface Services {
             .build()
 
         val instance: Services = Retrofit.Builder()
-            .baseUrl("https://zenquotes.io/api/")
+            .baseUrl("https://localhost:8000") // Replace with your API base URL
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()
