@@ -85,22 +85,21 @@ interface Services {
             .addInterceptor(logging)
             .addInterceptor { chain ->
                 val original = chain.request()
-
+                val noAuthHeader = original.header("No-Auth")
                 val requestBuilder = original.newBuilder()
 
-                // Only add Authorization if "No-Auth" header is NOT present
-                if (original.header("No-Auth") == null) {
+                if (noAuthHeader == "false") {
                     val token = com.example.proyecto.Models.MyApp.tokenManager.getToken()
                     if (token != null) {
                         requestBuilder.addHeader("Authorization", "Token $token")
                     }
-                } else {
-                    // Remove the No-Auth marker before sending
-                    requestBuilder.removeHeader("No-Auth")
                 }
+                // Remove the No-Auth header before sending
+                requestBuilder.removeHeader("No-Auth")
 
                 chain.proceed(requestBuilder.build())
             }
+
             .build()
 
         val instance: Services = Retrofit.Builder()
