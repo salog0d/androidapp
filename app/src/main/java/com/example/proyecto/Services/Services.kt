@@ -30,47 +30,47 @@ data class APIToken(
 interface Services {
 
     // Send phone number for user verification and receive OTP
-    @POST("/apiusers/phone-verification/send/")
+    @POST("users/phone-verification/send/")
     @Headers("No-Auth: true")
     suspend fun verifyLogin(@Body request: VerificationLogin): LoginResponse
 
     // Verify OTP
-    @POST("/apiusers/phone-verification/verify/")
+    @POST("users/phone-verification/verify/")
     @Headers("No-Auth: true")
     suspend  fun verifyOtp(@Body request: VerificationOTP): APIToken
 
     // Fetch hostels
-    @GET("/apialbergues/hostels/")
+    @GET("albergues/hostels/")
     @Headers("No-Auth: false")
     suspend fun getHostels(): HostelList
 
     // Fetch user's hostel reservations
-    @GET("/apialbergues/reservations/my_reservations/")
+    @GET("albergues/reservations/my_reservations/")
     @Headers("No-Auth: false")
     suspend fun getMyReservations(): MyHostelReservationList
 
     //Create a new hostel reservation
-    @POST("/apialbergues/reservations/")
+    @POST("albergues/reservations/")
     @Headers("No-Auth: false")
     suspend fun createHostelReservation(@Body request: NewHostelReservation): NewHostelReservation
 
     // Fetch Hostel Services
-    @GET("/apiservices/hostel-services/")
+    @GET("services/hostel-services/")
     @Headers("No-Auth: false")
     suspend fun getHostelServices(): HostelServicesList
 
     // Fetch user's service reservations
-    @GET("/apiservices/reservations/my_reservations/")
+    @GET("services/reservations/my_reservations/")
     @Headers("No-Auth: false")
     suspend fun getMyServiceReservations(): MyServiceReservationList
 
     // Fetch user's upcoming service reservations 24 hours
-    @GET("/apiservices/reservations/upcoming/")
+    @GET("services/reservations/upcoming/")
     @Headers("No-Auth: false")
     suspend fun getMyUpcomingServiceReservations(): MyServiceReservationList
 
     //Create a new service reservation
-    @POST("/apiservices/reservations/")
+    @POST("services/reservations/")
     @Headers("No-Auth: false")
     suspend fun createServiceReservation(@Body request: NewServiceReservation): NewServiceReservation
 
@@ -103,7 +103,7 @@ interface Services {
             .build()
 
         val instance: Services = Retrofit.Builder()
-            .baseUrl("https://localhost:8000") // Replace with your API base URL
+            .baseUrl("https://localhost:8000/api/") // Replace with your API base URL
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()
