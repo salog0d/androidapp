@@ -1,36 +1,113 @@
 package com.example.proyecto.Services
 
-import retrofit2.http.GET
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import android.R
+import com.example.proyecto.Models.HostelList
+import com.example.proyecto.Models.HostelServicesList
+import com.example.proyecto.Models.MyHostelReservationList
+import com.example.proyecto.Models.MyServiceReservationList
+import com.example.proyecto.Models.NewServiceReservation
+import com.example.proyecto.Models.NewHostelReservation
+import com.example.proyecto.Models.VerificationLogin
+import com.example.proyecto.Models.VerificationOTP
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Headers
+import retrofit2.http.POST
 
-interface QuotesService {
 
-    @GET("quotes")                 // ← CAMBIA si tu endpoint es otro
-    suspend fun getQuotes(): List<Quote> // Assuming getQuotes returns a List of Quote objects. Adjust if necessary.
+data class LoginResponse(
+    val token: String // or whatever your API returns
+)
+
+data class APIToken(
+    val token: String
+)
+interface Services {
+
+    // Send phone number for user verification and receive OTP
+    @POST("users/phone-verification/send/")
+    @Headers("No-Auth: true")
+    suspend fun verifyLogin(@Body request: VerificationLogin): LoginResponse
+
+    // Verify OTP
+    @POST("users/phone-verification/verify/")
+    @Headers("No-Auth: true")
+    suspend  fun verifyOtp(@Body request: VerificationOTP): APIToken
+
+    // Fetch hostels
+    @GET("albergues/hostels/")
+    @Headers("No-Auth: false")
+    suspend fun getHostels(): HostelList
+
+    // Fetch user's hostel reservations
+    @GET("albergues/reservations/my_reservations/")
+    @Headers("No-Auth: false")
+    suspend fun getMyReservations(): MyHostelReservationList
+
+    //Create a new hostel reservation
+    @POST("albergues/reservations/")
+    @Headers("No-Auth: false")
+    suspend fun createHostelReservation(@Body request: NewHostelReservation): NewHostelReservation
+
+    // Fetch Hostel Services
+    @GET("services/hostel-services/")
+    @Headers("No-Auth: false")
+    suspend fun getHostelServices(): HostelServicesList
+
+    // Fetch user's service reservations
+    @GET("services/reservations/my_reservations/")
+    @Headers("No-Auth: false")
+    suspend fun getMyServiceReservations(): MyServiceReservationList
+
+    // Fetch user's upcoming service reservations 24 hours
+    @GET("services/reservations/upcoming/")
+    @Headers("No-Auth: false")
+    suspend fun getMyUpcomingServiceReservations(): MyServiceReservationList
+
+    //Create a new service reservation
+    @POST("services/reservations/")
+    @Headers("No-Auth: false")
+    suspend fun createServiceReservation(@Body request: NewServiceReservation): NewServiceReservation
+
+
+
     companion object {
         private val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BASIC // BODY solo para debug
+            level = HttpLoggingInterceptor.Level.BASIC
         }
+
         private val client = OkHttpClient.Builder()
             .addInterceptor(logging)
+            .addInterceptor { chain ->
+                val original = chain.request()
+                val noAuthHeader = original.header("No-Auth")
+                val requestBuilder = original.newBuilder()
+
+                if (noAuthHeader == "false") {
+                    val token = com.example.proyecto.Models.MyApp.tokenManager.getToken()
+                    if (token != null) {
+                        requestBuilder.addHeader("Authorization", "Token $token")
+                    }
+                }
+                // Remove the No-Auth header before sending
+                requestBuilder.removeHeader("No-Auth")
+
+                chain.proceed(requestBuilder.build())
+            }
+
             .build()
 
-        val instance: QuotesService = Retrofit.Builder()
-            .baseUrl("https://zenquotes.io/api/") // ← CAMBIA la base (SIEMPRE con '/')
+        val instance: Services = Retrofit.Builder()
+            .baseUrl("https://localhost:8000/api/") // Replace with your API base URL
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()
-            .create(QuotesService::class.java) // Explicitly pass the class    }
+            .create(Services::class.java)
     }
+
 }
-
-
-// You'll need a data class to represent the structure of a quote from the API
-data class Quote(
-    val q: String, // quote text
-    val a: String, // author
-    // Add other fields if your API returns more data
-)
