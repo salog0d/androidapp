@@ -3,16 +3,24 @@ package com.example.proyecto.ViewModel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.proyecto.Models.VerificationLogin
-import com.example.proyecto.Models.VerificationOTP
-import com.example.proyecto.Services.Services
-import com.example.proyecto.Models.NewHostelReservation
-import com.example.proyecto.Models.NewServiceReservation
-import com.example.proyecto.Utilities.TokenManager
+import com.example.proyecto.models.VerificationLogin
+import com.example.proyecto.models.VerificationOTP
+import com.example.proyecto.services.Services
+import com.example.proyecto.models.NewHostelReservation
+import com.example.proyecto.models.NewServiceReservation
+import com.example.proyecto.utilities.TokenManager
 import com.example.proyecto.data.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+
+//pre-registro-form
+import com.example.proyecto.models.PreRegForm
+import com.example.proyecto.models.PreRegResponse
+import retrofit2.Response
+import retrofit2.http.Body
+import retrofit2.http.Headers
+import retrofit2.http.POST
 
 class GeneralViewModel : ViewModel() {
 
@@ -42,27 +50,42 @@ class GeneralViewModel : ViewModel() {
     private val _myHostelReservationsState = MutableStateFlow<MyReservationsState>(ResultState.Idle)
     val myHostelReservationsState: StateFlow<MyReservationsState> = _myHostelReservationsState
 
-    private val _myServiceReservationsState = MutableStateFlow<ServiceReservationsState>(ResultState.Idle)
-    val myServiceReservationsState: StateFlow<ServiceReservationsState> = _myServiceReservationsState
+    private val _myServiceReservationsState =
+        MutableStateFlow<ServiceReservationsState>(ResultState.Idle)
+    val myServiceReservationsState: StateFlow<ServiceReservationsState> =
+        _myServiceReservationsState
 
-    private val _myUpcomingReservationsState = MutableStateFlow<ServiceReservationsState>(ResultState.Idle)
-    val myUpcomingReservationsState: StateFlow<ServiceReservationsState> = _myUpcomingReservationsState
+    private val _myUpcomingReservationsState =
+        MutableStateFlow<ServiceReservationsState>(ResultState.Idle)
+    val myUpcomingReservationsState: StateFlow<ServiceReservationsState> =
+        _myUpcomingReservationsState
+
+    private val _preRegistroState = MutableStateFlow<PreRegistroState>(ResultState.Idle)
+    val preRegistroState: StateFlow<PreRegistroState> = _preRegistroState
 
     // --------------------
     // New Reservation States
     // --------------------
-    private val _newHostelReservationState = MutableStateFlow<NewHostelReservationState>(ResultState.Idle)
+    private val _newHostelReservationState =
+        MutableStateFlow<NewHostelReservationState>(ResultState.Idle)
     val newHostelReservationState: StateFlow<NewHostelReservationState> = _newHostelReservationState
 
-    private val _newServiceReservationState = MutableStateFlow<NewServiceReservationState>(ResultState.Idle)
-    val newServiceReservationState: StateFlow<NewServiceReservationState> = _newServiceReservationState
+    private val _newServiceReservationState =
+        MutableStateFlow<NewServiceReservationState>(ResultState.Idle)
+    val newServiceReservationState: StateFlow<NewServiceReservationState> =
+        _newServiceReservationState
 
 
     // --------------------
     // Update fields
     // --------------------
-    fun updatePhoneNumber(phone: String) { _phoneNumber.value = phone }
-    fun updateOTP(otp: String) { _otp.value = otp }
+    fun updatePhoneNumber(phone: String) {
+        _phoneNumber.value = phone
+    }
+
+    fun updateOTP(otp: String) {
+        _otp.value = otp
+    }
 
     // --------------------
     // API Calls
@@ -88,7 +111,7 @@ class GeneralViewModel : ViewModel() {
         viewModelScope.launch {
             _otpState.value = ResultState.Loading
             try {
-                val request = VerificationOTP(code = _otp.value, phone_number = _phoneNumber.value)
+                val request = VerificationOTP(code = _otp.value , phone_number = _phoneNumber.value)
                 val response = Services.instance.verifyOtp(request)
                 if (response.isSuccessful && response.body() != null) {
                     val apiToken = response.body()!!
@@ -214,6 +237,36 @@ class GeneralViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 _newServiceReservationState.value = ResultState.Error(e.message ?: "Unknown error")
+            }
+        }
+    }
+
+    fun submitPreRegistro(request: PreRegForm) { // Cambié el nombre del parámetro para evitar confusión con la variable 'request' local
+        viewModelScope.launch { // Solo un launch es necesario
+            _preRegistroState.value = ResultState.Loading
+            try {
+                // Asume que Services.instance te da un objeto que implementa ServicesApi
+                // y que ServicesApi tiene el método suspend fun enviarPreRegistro.
+                val response =
+                    Services.instance.enviarPreRegistro(request) // Llama a la función suspendida
+
+                if (response.isSuccessful && response.body() != null) {
+                    _preRegistroState.value = ResultState.Success(response.body()!!)
+                } else {
+                    val errorBody =
+                        response.errorBody()?.string() // Intenta obtener más detalles del error
+                    val errorMessage = if (errorBody.isNullOrEmpty()) {
+                        response.message() ?: "Error desconocido (${response.code()})"
+                    } else {
+                        errorBody
+                    }
+                    _preRegistroState.value = ResultState.Error(errorMessage)
+                    println("Error en API pre-registro: ${response.code()} - $errorMessage")
+                }
+            } catch (e: Exception) {
+                _preRegistroState.value =
+                    ResultState.Error(e.message ?: "Error de red o desconocido")
+                println("Excepción en pre-registro: ${e.message}")
             }
         }
     }

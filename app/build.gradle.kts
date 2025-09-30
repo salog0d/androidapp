@@ -82,4 +82,7 @@ dependencies {
     // Concurrency + Security
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.security.crypto)
+
+    //image
+    implementation(libs.coil.compose.v260)
 }
