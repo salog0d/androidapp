@@ -1,6 +1,5 @@
 package com.example.proyecto.Screens
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,8 +19,7 @@ import com.example.proyecto.Models.LoginState
 import com.example.proyecto.R
 import com.example.proyecto.ui.viewmodels.CountriesViewModel
 import com.example.proyecto.ViewModel.GeneralViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+
 
 @Composable
 @Preview(showBackground = true, device = "id:pixel_9a", showSystemUi = true)

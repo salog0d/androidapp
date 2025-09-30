@@ -1,33 +1,19 @@
 package com.example.proyecto.Services
 
-import android.R
-import com.example.proyecto.Models.HostelList
-import com.example.proyecto.Models.HostelServicesList
-import com.example.proyecto.Models.MyHostelReservationList
-import com.example.proyecto.Models.MyServiceReservationList
-import com.example.proyecto.Models.NewServiceReservation
-import com.example.proyecto.Models.NewHostelReservation
-import com.example.proyecto.Models.VerificationLogin
-import com.example.proyecto.Models.VerificationOTP
+import com.example.proyecto.Models.*
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.create
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.POST
 
+data class LoginResponse(val token: String)
+data class APIToken(val token: String)
 
-data class LoginResponse(
-    val token: String // or whatever your API returns
-)
-
-data class APIToken(
-    val token: String
-)
 interface Services {
 
     // Send phone number for user verification and receive OTP
@@ -38,44 +24,42 @@ interface Services {
     // Verify OTP
     @POST("users/phone-verification/verify/")
     @Headers("No-Auth: true")
-    suspend  fun verifyOtp(@Body request: VerificationOTP): APIToken
+    suspend fun verifyOtp(@Body request: VerificationOTP): Response<APIToken>
 
     // Fetch hostels
     @GET("albergues/hostels/")
     @Headers("No-Auth: false")
-    suspend fun getHostels(): HostelList
+    suspend fun getHostels(): Response<HostelList>
 
     // Fetch user's hostel reservations
     @GET("albergues/reservations/my_reservations/")
     @Headers("No-Auth: false")
-    suspend fun getMyReservations(): MyHostelReservationList
+    suspend fun getMyReservations(): Response<MyHostelReservationList>
 
-    //Create a new hostel reservation
+    // Create a new hostel reservation
     @POST("albergues/reservations/")
     @Headers("No-Auth: false")
-    suspend fun createHostelReservation(@Body request: NewHostelReservation): NewHostelReservation
+    suspend fun createHostelReservation(@Body request: NewHostelReservation): Response<NewHostelReservation>
 
-    // Fetch Hostel Services
+    // Fetch hostel services
     @GET("services/hostel-services/")
     @Headers("No-Auth: false")
-    suspend fun getHostelServices(): HostelServicesList
+    suspend fun getHostelServices(): Response<HostelServicesList>
 
     // Fetch user's service reservations
     @GET("services/reservations/my_reservations/")
     @Headers("No-Auth: false")
-    suspend fun getMyServiceReservations(): MyServiceReservationList
+    suspend fun getMyServiceReservations(): Response<MyServiceReservationList>
 
     // Fetch user's upcoming service reservations 24 hours
     @GET("services/reservations/upcoming/")
     @Headers("No-Auth: false")
-    suspend fun getMyUpcomingServiceReservations(): MyServiceReservationList
+    suspend fun getMyUpcomingServiceReservations(): Response<MyServiceReservationList>
 
-    //Create a new service reservation
+    // Create a new service reservation
     @POST("services/reservations/")
     @Headers("No-Auth: false")
-    suspend fun createServiceReservation(@Body request: NewServiceReservation): NewServiceReservation
-
-
+    suspend fun createServiceReservation(@Body request: NewServiceReservation): Response<NewServiceReservation>
 
     companion object {
         private val logging = HttpLoggingInterceptor().apply {
@@ -95,20 +79,17 @@ interface Services {
                         requestBuilder.addHeader("Authorization", "Token $token")
                     }
                 }
-                // Remove the No-Auth header before sending
-                requestBuilder.removeHeader("No-Auth")
 
+                requestBuilder.removeHeader("No-Auth")
                 chain.proceed(requestBuilder.build())
             }
-
             .build()
 
         val instance: Services = Retrofit.Builder()
-            .baseUrl("https://localhost:8000/api/") // Replace with your API base URL
+            .baseUrl("http://20.246.91.21:8000/api/") // replace with LAN IP if using emulator/device
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()
             .create(Services::class.java)
     }
-
 }

@@ -1,147 +1,220 @@
 package com.example.proyecto.ViewModel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.proyecto.Models.HostelList
-import com.example.proyecto.Models.HostelListState
-import com.example.proyecto.Models.HostelServicesList
-import com.example.proyecto.Models.HostelServicesListState
-import com.example.proyecto.Models.MyHostelReservationList
-import com.example.proyecto.Models.MyHostelReservationListState
-import com.example.proyecto.Models.MyServiceReservationList
-import com.example.proyecto.Models.MyServiceReservationListState
-import com.example.proyecto.Models.LoginState
 import com.example.proyecto.Models.VerificationLogin
 import com.example.proyecto.Models.VerificationOTP
 import com.example.proyecto.Services.Services
+import com.example.proyecto.Models.NewHostelReservation
+import com.example.proyecto.Models.NewServiceReservation
+import com.example.proyecto.Utilities.TokenManager
+import com.example.proyecto.data.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class GeneralViewModel : ViewModel() {
 
+    // --------------------
+    // StateFlows
+    // --------------------
     private val _counter = MutableStateFlow(0)
-    private val _HostelListState = MutableStateFlow<HostelListState?>(HostelListState.Loading)
-    private val _HostelServicesListState = MutableStateFlow<HostelServicesListState?>(
-        HostelServicesListState.Loading)
-    private val _MyHostelReservationListState = MutableStateFlow<MyHostelReservationListState?>(
-        MyHostelReservationListState.Loading)
-    private val _MyServiceReservationListState = MutableStateFlow<MyServiceReservationListState?>(
-        MyServiceReservationListState.Loading)
-    private val _MyUpcomingReservationListState = MutableStateFlow<MyServiceReservationListState?>(
-        MyServiceReservationListState.Loading)
-
-    private val _PhoneNumber = MutableStateFlow("")
-    private val _OTP = MutableStateFlow("")
-
-    val OTP: StateFlow<String> = _OTP
-    val PhoneNumber: StateFlow<String> = _PhoneNumber
     val counter: StateFlow<Int> = _counter
-    val hostelList: StateFlow<HostelListState?> = _HostelListState
-    val hostelServicesList: StateFlow<HostelServicesListState?> = _HostelServicesListState
-    val myHostelReservationList: StateFlow<MyHostelReservationListState?> = _MyHostelReservationListState
-    val myServiceReservationList: StateFlow<MyServiceReservationListState?> = _MyServiceReservationListState
-    val myUpcomingReservationList: StateFlow<MyServiceReservationListState?> = _MyUpcomingReservationListState
+
+    private val _phoneNumber = MutableStateFlow("")
+    private val _otp = MutableStateFlow("")
+    val phoneNumber: StateFlow<String> = _phoneNumber
+    val otp: StateFlow<String> = _otp
+
+    private val _loginState = MutableStateFlow<LoginState>(ResultState.Idle)
+    val loginState: StateFlow<LoginState> = _loginState
+
+    private val _otpState = MutableStateFlow<OTPTState>(ResultState.Idle)
+    val otpState: StateFlow<OTPTState> = _otpState
+
+    private val _hostelListState = MutableStateFlow<HostelListState>(ResultState.Idle)
+    val hostelListState: StateFlow<HostelListState> = _hostelListState
+
+    private val _hostelServicesState = MutableStateFlow<HostelServicesState>(ResultState.Idle)
+    val hostelServicesState: StateFlow<HostelServicesState> = _hostelServicesState
+
+    private val _myHostelReservationsState = MutableStateFlow<MyReservationsState>(ResultState.Idle)
+    val myHostelReservationsState: StateFlow<MyReservationsState> = _myHostelReservationsState
+
+    private val _myServiceReservationsState = MutableStateFlow<ServiceReservationsState>(ResultState.Idle)
+    val myServiceReservationsState: StateFlow<ServiceReservationsState> = _myServiceReservationsState
+
+    private val _myUpcomingReservationsState = MutableStateFlow<ServiceReservationsState>(ResultState.Idle)
+    val myUpcomingReservationsState: StateFlow<ServiceReservationsState> = _myUpcomingReservationsState
+
+    // --------------------
+    // New Reservation States
+    // --------------------
+    private val _newHostelReservationState = MutableStateFlow<NewHostelReservationState>(ResultState.Idle)
+    val newHostelReservationState: StateFlow<NewHostelReservationState> = _newHostelReservationState
+
+    private val _newServiceReservationState = MutableStateFlow<NewServiceReservationState>(ResultState.Idle)
+    val newServiceReservationState: StateFlow<NewServiceReservationState> = _newServiceReservationState
 
 
-    fun updatePhoneNumber(phone: String) {
-        _PhoneNumber.value = phone
+    // --------------------
+    // Update fields
+    // --------------------
+    fun updatePhoneNumber(phone: String) { _phoneNumber.value = phone }
+    fun updateOTP(otp: String) { _otp.value = otp }
+
+    // --------------------
+    // API Calls
+    // --------------------
+    fun verifyLogin() {
+        viewModelScope.launch {
+            _loginState.value = ResultState.Loading
+            try {
+                val request = VerificationLogin(phone_number = _phoneNumber.value)
+                val response = Services.instance.verifyLogin(request)
+                if (response.isSuccessful && response.body() != null) {
+                    _loginState.value = ResultState.Success(response.body()!!)
+                } else {
+                    _loginState.value = ResultState.Error(response.message())
+                }
+            } catch (e: Exception) {
+                _loginState.value = ResultState.Error("Network error: ${e.message}")
+            }
+        }
     }
-    fun updateOTP(otp: String) {
-        _OTP.value = otp
+
+    fun verifyOTP(context: Context) {
+        viewModelScope.launch {
+            _otpState.value = ResultState.Loading
+            try {
+                val request = VerificationOTP(code = _otp.value, phone_number = _phoneNumber.value)
+                val response = Services.instance.verifyOtp(request)
+                if (response.isSuccessful && response.body() != null) {
+                    val apiToken = response.body()!!
+                    // Save token securely
+                    TokenManager(context).saveToken(apiToken.token)
+
+                    _otpState.value = ResultState.Success(apiToken)
+                } else {
+                    _otpState.value = ResultState.Error(response.message())
+                }
+            } catch (e: Exception) {
+                _otpState.value = ResultState.Error("Network error: ${e.message}")
+            }
+        }
     }
+
 
     fun fetchHostels() {
         viewModelScope.launch {
-            _HostelListState.value = HostelListState.Loading
+            _hostelListState.value = ResultState.Loading
             try {
                 val response = Services.instance.getHostels()
-                _HostelListState.value = HostelListState.Success(response)
+                if (response.isSuccessful && response.body() != null) {
+                    _hostelListState.value = ResultState.Success(response.body()!!)
+                } else {
+                    _hostelListState.value = ResultState.Error(response.message())
+                }
             } catch (e: Exception) {
-                _HostelListState.value = HostelListState.Error(e.message ?: "Unknown error")
+                _hostelListState.value = ResultState.Error(e.message ?: "Unknown error")
             }
         }
     }
 
     fun fetchHostelServices() {
         viewModelScope.launch {
-            _HostelServicesListState.value = HostelServicesListState.Loading
+            _hostelServicesState.value = ResultState.Loading
             try {
                 val response = Services.instance.getHostelServices()
-                _HostelServicesListState.value = HostelServicesListState.Success(response)
+                if (response.isSuccessful && response.body() != null) {
+                    _hostelServicesState.value = ResultState.Success(response.body()!!)
+                } else {
+                    _hostelServicesState.value = ResultState.Error(response.message())
+                }
             } catch (e: Exception) {
-                _HostelServicesListState.value = HostelServicesListState.Error(e.message ?: "Unknown error")
+                _hostelServicesState.value = ResultState.Error(e.message ?: "Unknown error")
             }
         }
     }
 
     fun fetchMyHostelReservations() {
         viewModelScope.launch {
-            _MyHostelReservationListState.value = MyHostelReservationListState.Loading
+            _myHostelReservationsState.value = ResultState.Loading
             try {
                 val response = Services.instance.getMyReservations()
-                _MyHostelReservationListState.value = MyHostelReservationListState.Success(response)
+                if (response.isSuccessful && response.body() != null) {
+                    _myHostelReservationsState.value = ResultState.Success(response.body()!!)
+                } else {
+                    _myHostelReservationsState.value = ResultState.Error(response.message())
+                }
             } catch (e: Exception) {
-                _MyHostelReservationListState.value = MyHostelReservationListState.Error(e.message ?: "Unknown error")
+                _myHostelReservationsState.value = ResultState.Error(e.message ?: "Unknown error")
             }
         }
     }
 
     fun fetchMyServiceReservations() {
         viewModelScope.launch {
-            _MyServiceReservationListState.value = MyServiceReservationListState.Loading
+            _myServiceReservationsState.value = ResultState.Loading
             try {
                 val response = Services.instance.getMyServiceReservations()
-                _MyServiceReservationListState.value = MyServiceReservationListState.Success(response)
+                if (response.isSuccessful && response.body() != null) {
+                    _myServiceReservationsState.value = ResultState.Success(response.body()!!)
+                } else {
+                    _myServiceReservationsState.value = ResultState.Error(response.message())
+                }
             } catch (e: Exception) {
-                _MyServiceReservationListState.value = MyServiceReservationListState.Error(e.message ?: "Unknown error")
+                _myServiceReservationsState.value = ResultState.Error(e.message ?: "Unknown error")
             }
         }
     }
 
     fun fetchMyUpcomingServiceReservations() {
         viewModelScope.launch {
-            _MyUpcomingReservationListState.value = MyServiceReservationListState.Loading
+            _myUpcomingReservationsState.value = ResultState.Loading
             try {
                 val response = Services.instance.getMyUpcomingServiceReservations()
-                _MyUpcomingReservationListState.value = MyServiceReservationListState.Success(response)
-            } catch (e: Exception) {
-                _MyUpcomingReservationListState.value = MyServiceReservationListState.Error(e.message ?: "Unknown error")
-            }
-        }
-    }
-
-
-    private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
-    val loginState: StateFlow<LoginState> = _loginState
-
-    fun verifyLogin() {
-        viewModelScope.launch {
-            _loginState.value = LoginState.Loading
-            try {
-                val request = VerificationLogin(phone_number = _PhoneNumber.value)
-                val response = Services.instance.verifyLogin(request)
-
-                if (response.isSuccessful) {
-                    _loginState.value = LoginState.Success
+                if (response.isSuccessful && response.body() != null) {
+                    _myUpcomingReservationsState.value = ResultState.Success(response.body()!!)
                 } else {
-                    _loginState.value = LoginState.Error("Invalid phone")
+                    _myUpcomingReservationsState.value = ResultState.Error(response.message())
                 }
             } catch (e: Exception) {
-                _loginState.value = LoginState.Error("Network error: ${e.message}")
+                _myUpcomingReservationsState.value = ResultState.Error(e.message ?: "Unknown error")
             }
         }
     }
 
-    fun VerifyOTP(){
+    fun createHostelReservation(request: NewHostelReservation) {
         viewModelScope.launch {
+            _newHostelReservationState.value = ResultState.Loading
             try {
-                val request = VerificationOTP(code = _OTP.value,phone_number = _PhoneNumber.value)
-                val response = Services.instance.verifyOtp(request)
+                val response = Services.instance.createHostelReservation(request)
+                if (response.isSuccessful && response.body() != null) {
+                    _newHostelReservationState.value = ResultState.Success(response.body()!!)
+                } else {
+                    _newHostelReservationState.value = ResultState.Error(response.message())
+                }
             } catch (e: Exception) {
+                _newHostelReservationState.value = ResultState.Error(e.message ?: "Unknown error")
             }
         }
     }
 
-
+    fun createServiceReservation(request: NewServiceReservation) {
+        viewModelScope.launch {
+            _newServiceReservationState.value = ResultState.Loading
+            try {
+                val response = Services.instance.createServiceReservation(request)
+                if (response.isSuccessful && response.body() != null) {
+                    _newServiceReservationState.value = ResultState.Success(response.body()!!)
+                } else {
+                    _newServiceReservationState.value = ResultState.Error(response.message())
+                }
+            } catch (e: Exception) {
+                _newServiceReservationState.value = ResultState.Error(e.message ?: "Unknown error")
+            }
+        }
+    }
 }
