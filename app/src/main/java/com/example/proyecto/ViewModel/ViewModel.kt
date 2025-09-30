@@ -10,6 +10,9 @@ import com.example.proyecto.Models.MyHostelReservationList
 import com.example.proyecto.Models.MyHostelReservationListState
 import com.example.proyecto.Models.MyServiceReservationList
 import com.example.proyecto.Models.MyServiceReservationListState
+import com.example.proyecto.Models.LoginState
+import com.example.proyecto.Models.VerificationLogin
+import com.example.proyecto.Models.VerificationOTP
 import com.example.proyecto.Services.Services
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,12 +31,25 @@ class GeneralViewModel : ViewModel() {
     private val _MyUpcomingReservationListState = MutableStateFlow<MyServiceReservationListState?>(
         MyServiceReservationListState.Loading)
 
+    private val _PhoneNumber = MutableStateFlow("")
+    private val _OTP = MutableStateFlow("")
+
+    val OTP: StateFlow<String> = _OTP
+    val PhoneNumber: StateFlow<String> = _PhoneNumber
     val counter: StateFlow<Int> = _counter
     val hostelList: StateFlow<HostelListState?> = _HostelListState
     val hostelServicesList: StateFlow<HostelServicesListState?> = _HostelServicesListState
     val myHostelReservationList: StateFlow<MyHostelReservationListState?> = _MyHostelReservationListState
     val myServiceReservationList: StateFlow<MyServiceReservationListState?> = _MyServiceReservationListState
     val myUpcomingReservationList: StateFlow<MyServiceReservationListState?> = _MyUpcomingReservationListState
+
+
+    fun updatePhoneNumber(phone: String) {
+        _PhoneNumber.value = phone
+    }
+    fun updateOTP(otp: String) {
+        _OTP.value = otp
+    }
 
     fun fetchHostels() {
         viewModelScope.launch {
@@ -91,6 +107,38 @@ class GeneralViewModel : ViewModel() {
                 _MyUpcomingReservationListState.value = MyServiceReservationListState.Success(response)
             } catch (e: Exception) {
                 _MyUpcomingReservationListState.value = MyServiceReservationListState.Error(e.message ?: "Unknown error")
+            }
+        }
+    }
+
+
+    private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
+    val loginState: StateFlow<LoginState> = _loginState
+
+    fun verifyLogin() {
+        viewModelScope.launch {
+            _loginState.value = LoginState.Loading
+            try {
+                val request = VerificationLogin(phone_number = _PhoneNumber.value)
+                val response = Services.instance.verifyLogin(request)
+
+                if (response.isSuccessful) {
+                    _loginState.value = LoginState.Success
+                } else {
+                    _loginState.value = LoginState.Error("Invalid phone")
+                }
+            } catch (e: Exception) {
+                _loginState.value = LoginState.Error("Network error: ${e.message}")
+            }
+        }
+    }
+
+    fun VerifyOTP(){
+        viewModelScope.launch {
+            try {
+                val request = VerificationOTP(code = _OTP.value,phone_number = _PhoneNumber.value)
+                val response = Services.instance.verifyOtp(request)
+            } catch (e: Exception) {
             }
         }
     }

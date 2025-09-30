@@ -11,6 +11,7 @@ import com.example.proyecto.Models.VerificationLogin
 import com.example.proyecto.Models.VerificationOTP
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
@@ -32,7 +33,7 @@ interface Services {
     // Send phone number for user verification and receive OTP
     @POST("users/phone-verification/send/")
     @Headers("No-Auth: true")
-    suspend fun verifyLogin(@Body request: VerificationLogin): LoginResponse
+    suspend fun verifyLogin(@Body request: VerificationLogin): Response<LoginResponse>
 
     // Verify OTP
     @POST("users/phone-verification/verify/")
