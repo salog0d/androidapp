@@ -1,11 +1,23 @@
 package com.example.proyecto.Components
 
+import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.proyecto.Models.HServicesScheduleData
-import com.example.proyecto.Models.Hostel
-import com.example.proyecto.Models.HostelServices
-import com.example.proyecto.Models.Location
+import com.example.proyecto.models.HServicesScheduleData
+import com.example.proyecto.models.Hostel
+import com.example.proyecto.models.HostelServices
+import com.example.proyecto.models.Location
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+
 val scheduleData = HServicesScheduleData(
     created_at = "2025-09-30T16:00:00Z",
     created_by_name = "Admin User",
@@ -60,15 +72,175 @@ val myHostel = Hostel(
     phone = "+52 81 1234 5678",
     women_capacity = 40
 )
-
-@Preview
 @Composable
-fun HostelCard() {
+fun HostelCard(hostel: Hostel, usedCapacity: Int = 0) {
+    val totalCapacity = hostel.men_capacity + hostel.women_capacity
+    val freeCapacity = (totalCapacity - usedCapacity).coerceAtLeast(0)
+    val freePercentage = if (totalCapacity > 0) freeCapacity.toFloat() / totalCapacity else 0f
 
+    val indicatorColor = when {
+        freeCapacity == 0 -> Color.Red
+        freePercentage > 0.8f -> Color.Green
+        else -> Color.Yellow
+    }
+
+    Card(
+        modifier = Modifier
+            .padding(6.dp)
+            .wrapContentSize(),  // ensures card is just as big as content
+        shape = RoundedCornerShape(10.dp),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+                .wrapContentSize()
+        ) {
+            // Title + Indicator
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = hostel.name,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Box(
+                    modifier = Modifier
+                        .size(14.dp)
+                        .clip(CircleShape)
+                        .background(indicatorColor)
+                )
+            }
+
+            Text(
+                text = "${hostel.location.city}, ${hostel.location.state}",
+                style = MaterialTheme.typography.bodySmall
+            )
+            Text(
+                text = "Tel: ${hostel.phone}",
+                style = MaterialTheme.typography.bodySmall
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Row {
+                Text(
+                    text = "Hombres: ${hostel.men_capacity}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Mujeres: ${hostel.women_capacity}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            Text(
+                text = "Total: $totalCapacity (Libres: $freeCapacity)",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
 }
 
-@Preview
-@Composable
-fun ServiceCard() {
 
+@Preview(showBackground = true)
+@Composable
+fun PreviewHostelCard() {
+    HostelCard(hostel = myHostel, usedCapacity = 10)
 }
+
+
+
+@Composable
+fun ServiceCard(service: HostelServices) {
+    // Color según el estatus
+    val statusColor = if (service.is_active) Color.Green else Color.Red
+
+    Card(
+        modifier = Modifier
+            .padding(4.dp)
+            .wrapContentSize(), // tarjeta ajustada al contenido
+        shape = RoundedCornerShape(10.dp),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(6.dp)
+                .wrapContentSize()
+        ) {
+            // Nombre del servicio
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = service.service_name,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                // Indicador de estatus como círculo
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .background(statusColor)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            // Descripción
+            Text(
+                text = service.service_description,
+                style = MaterialTheme.typography.bodySmall
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            // Albergue
+            Text(
+                text = "Albergue: ${service.hostel_name}",
+                style = MaterialTheme.typography.bodySmall
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            // Requiere aprobación
+            Text(
+                text = "Requiere aprobación: ${if (service.service_needs_approval) "Sí" else "No"}",
+                style = MaterialTheme.typography.bodySmall
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            // Precio y duración en una línea
+            Row {
+                Text(
+                    text = "Precio: ${service.service_price}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Duración: ${service.service_max_time} min",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            // Horario
+            Text(
+                text = "Horario: ${service.schedule}",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewServiceCard() {
+    ServiceCard(service = hostelService)
+}
+
+
+
