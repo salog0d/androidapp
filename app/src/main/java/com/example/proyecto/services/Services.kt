@@ -63,7 +63,7 @@ interface Services {
     suspend fun createServiceReservation(@Body request: NewServiceReservation): Response<NewServiceReservation>
 
     // Pre-register user
-    @POST("api/users/pre-register") // <-- REEMPLAZA con tu endpoint real para el pre-registro
+    @POST("users/pre-register/") // <-- REEMPLAZA con tu endpoint real para el pre-registro
     suspend fun enviarPreRegistro(@Body preRegData: PreRegForm): Response<PreRegResponse>
     companion object {
         private val logging = HttpLoggingInterceptor().apply {
@@ -90,7 +90,7 @@ interface Services {
             .build()
 
         val instance: Services = Retrofit.Builder()
-            .baseUrl("http://20.246.91.21:8000/api/") // replace with LAN IP if using emulator/device
+            .baseUrl("http://192.168.100.234:8001/api/") // replace with LAN IP if using emulator/device
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()

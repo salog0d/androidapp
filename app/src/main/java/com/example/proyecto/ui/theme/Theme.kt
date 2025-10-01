@@ -52,7 +52,7 @@ fun ProyectoTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = AppTypography, // <- aquí ya usas Gotham
         content = content
     )
 }

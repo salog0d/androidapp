@@ -2,33 +2,46 @@ package com.example.proyecto.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.proyecto.R
 
-// Set of Material typography styles to start with
-val Typography = Typography(
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    )
-    /* Other default text styles to override
+val Gotham = FontFamily(
+    Font(R.font.gotham_thin,       FontWeight.Thin),
+    Font(R.font.gotham_light,      FontWeight.Light),
+    Font(R.font.gotham_book,       FontWeight.Normal),
+    Font(R.font.gotham_medium,     FontWeight.Medium),
+    Font(R.font.gotham_bold,       FontWeight.Bold),
+    Font(R.font.gotham_black,      FontWeight.Black),
+    Font(R.font.gotham_ultra,      FontWeight.ExtraBold),
+    Font(R.font.gotham_xlight,     FontWeight.ExtraLight),
+    Font(R.font.gotham_lightitalic, FontWeight.Light, FontStyle.Italic),
+
+)
+
+val AppTypography = Typography(
     titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
+        fontFamily = Gotham,
+        fontWeight = FontWeight.Bold,
         fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
+        lineHeight = 28.sp
     ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
+    titleMedium = TextStyle(
+        fontFamily = Gotham,
         fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        fontSize = 100.sp
+    ),
+    bodyLarge = TextStyle(
+        fontFamily = Gotham,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp
+    ),
+    labelLarge = TextStyle(
+        fontFamily = Gotham,
+        fontWeight = FontWeight.Medium,
+        fontSize = 14.sp
     )
-    */
 )

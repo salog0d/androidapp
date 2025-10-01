@@ -89,4 +89,17 @@ dependencies {
     //icons
     implementation(libs.androidx.material.icons.extended)
 
+    //fechas
+    implementation(platform(libs.androidx.compose.bom.v20240500))
+    implementation(libs.androidx.foundation)
+
+    //responsive
+    implementation(libs.androidx.material3.window.size.class1)
+
+    //navigation
+    implementation(libs.androidx.navigation.compose)
+
+    implementation(libs.androidx.runtime) // o la versión que uses
+    implementation(libs.material3)
+
 }
