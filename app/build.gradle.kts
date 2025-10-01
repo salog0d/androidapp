@@ -85,4 +85,8 @@ dependencies {
 
     //image
     implementation(libs.coil.compose.v260)
+
+    //icons
+    implementation(libs.androidx.material.icons.extended)
+
 }

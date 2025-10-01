@@ -1,11 +1,11 @@
-package com.example.proyecto.Components
+package com.example.proyecto.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.proyecto.Models.HServicesScheduleData
-import com.example.proyecto.Models.Hostel
-import com.example.proyecto.Models.HostelServices
-import com.example.proyecto.Models.Location
+import com.example.proyecto.models.HServicesScheduleData
+import com.example.proyecto.models.Hostel
+import com.example.proyecto.models.HostelServices
+import com.example.proyecto.models.Location
 val scheduleData = HServicesScheduleData(
     created_at = "2025-09-30T16:00:00Z",
     created_by_name = "Admin User",
