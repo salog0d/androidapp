@@ -70,17 +70,19 @@ val myHostel = Hostel(
     men_capacity = 50,
     name = "Montaña Hostel",
     phone = "+52 81 1234 5678",
-    women_capacity = 40
+    women_capacity = 40,
+    current_men_capacity = 10,
+    current_women_capacity = 10
 )
 @Composable
-fun HostelCard(hostel: Hostel, usedCapacity: Int = 0) {
+fun HostelCard(hostel: Hostel) {
     val totalCapacity = hostel.men_capacity + hostel.women_capacity
-    val freeCapacity = (totalCapacity - usedCapacity).coerceAtLeast(0)
+    val freeCapacity = (totalCapacity - hostel.current_men_capacity - hostel.current_women_capacity).coerceAtLeast(0)
     val freePercentage = if (totalCapacity > 0) freeCapacity.toFloat() / totalCapacity else 0f
 
     val indicatorColor = when {
         freeCapacity == 0 -> Color.Red
-        freePercentage > 0.8f -> Color.Green
+        freePercentage > 0.2 -> Color.Green
         else -> Color.Yellow
     }
 
@@ -126,18 +128,18 @@ fun HostelCard(hostel: Hostel, usedCapacity: Int = 0) {
 
             Row {
                 Text(
-                    text = "Hombres: ${hostel.men_capacity}",
+                    text = "Hombres: ${hostel.men_capacity - hostel.current_men_capacity}",
                     style = MaterialTheme.typography.bodySmall
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Mujeres: ${hostel.women_capacity}",
+                    text = "Mujeres: ${hostel.women_capacity - hostel.current_women_capacity}",
                     style = MaterialTheme.typography.bodySmall
                 )
             }
 
             Text(
-                text = "Total: $totalCapacity (Libres: $freeCapacity)",
+                text = "Total: $freeCapacity (Total: $totalCapacity)",
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -148,7 +150,7 @@ fun HostelCard(hostel: Hostel, usedCapacity: Int = 0) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewHostelCard() {
-    HostelCard(hostel = myHostel, usedCapacity = 10)
+    HostelCard(hostel = myHostel)
 }
 
 

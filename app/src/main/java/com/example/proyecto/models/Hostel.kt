@@ -6,7 +6,9 @@ data class Hostel(
     val is_active: Boolean,
     val location: Location,
     val men_capacity: Int,
+    val current_men_capacity: Int,
     val name: String,
     val phone: String,
-    val women_capacity: Int
+    val women_capacity: Int,
+    val current_women_capacity : Int
 )
