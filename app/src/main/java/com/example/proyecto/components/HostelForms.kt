@@ -11,12 +11,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.proyecto.models.NewHostelReservation
 
 // -------------------- MAIN FORM --------------------
 @Composable
 fun ReservationForm(
     hostels: List<String>,
-    preselectedHostel: String? = null
+    preselectedHostel: String? = null,
+    hostelIdMap: Map<String, String> = emptyMap(),
+    userId: String,
+    onSubmitReservation: (NewHostelReservation) -> Unit
 ) {
     var selectedHostel by remember { mutableStateOf(preselectedHostel ?: "") }
     var expanded by remember { mutableStateOf(false) }
@@ -26,7 +30,7 @@ fun ReservationForm(
     var womenCount by remember { mutableStateOf(0) }
     val totalCount = menCount + womenCount
 
-    var arrivalDate by remember { mutableStateOf("") } // yyyy-MM-dd
+    var arrivalDate by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -59,10 +63,14 @@ fun ReservationForm(
             reservationType = reservationType,
             arrivalDate = arrivalDate,
             menCount = menCount,
-            womenCount = womenCount
+            womenCount = womenCount,
+            hostelIdMap = hostelIdMap,
+            userId = userId,
+            onSubmit = onSubmitReservation // ✅ bubble up
         )
     }
 }
+
 
 // -------------------- COMPONENT 1 --------------------
 @Composable
@@ -188,28 +196,31 @@ fun SubmitReservationButton(
     reservationType: String,
     arrivalDate: String,
     menCount: Int,
-    womenCount: Int
+    womenCount: Int,
+    hostelIdMap: Map<String, String>,
+    userId: String,
+    onSubmit: (NewHostelReservation) -> Unit
 ) {
+    val hostelId = hostelIdMap[selectedHostel] ?: ""
+
     Button(
         onClick = {
-            println(
-                """
-                {
-                  "user": "123e4567-e89b-12d3-a456-426614174000",
-                  "hostel": "$selectedHostel",
-                  "type": "$reservationType",
-                  "arrival_date": "$arrivalDate",
-                  "men_quantity": $menCount,
-                  "women_quantity": $womenCount
-                }
-                """.trimIndent()
+            val request = NewHostelReservation(
+                arrival_date = arrivalDate,
+                hostel = hostelId,
+                men_quantity = menCount,
+                type = reservationType,
+                user = userId,
+                women_quantity = womenCount
             )
+            onSubmit(request)  // ✅ pass back up
         },
         modifier = Modifier.fillMaxWidth()
     ) {
         Text("Submit Reservation")
     }
 }
+
 
 // -------------------- REUSABLE COUNTER --------------------
 @Composable
@@ -233,6 +244,8 @@ fun CounterField(label: String, value: Int, onIncrement: () -> Unit, onDecrement
 }
 
 // -------------------- PREVIEWS --------------------
+
+/*
 @Preview(showBackground = true)
 @Composable
 fun ReservationFormPreview_Empty() {
@@ -247,5 +260,28 @@ fun ReservationFormPreview_Prefilled() {
     ReservationForm(
         hostels = listOf("Hostel A", "Hostel B", "Hostel C"),
         preselectedHostel = "Hostel B"
+    )
+}
+*/
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun ReservationFormPreview() {
+    val mockHostels = listOf("Hostel A", "Hostel B", "Hostel C")
+    val mockHostelIdMap = mapOf(
+        "Hostel A" to "1",
+        "Hostel B" to "2",
+        "Hostel C" to "3"
+    )
+
+    ReservationForm(
+        hostels = mockHostels,
+        preselectedHostel = "Hostel B",
+        hostelIdMap = mockHostelIdMap,
+        userId = "12345",
+        onSubmitReservation = { reservation ->
+            // For preview we can just print/log
+            println("Preview Reservation Submitted: $reservation")
+        }
     )
 }

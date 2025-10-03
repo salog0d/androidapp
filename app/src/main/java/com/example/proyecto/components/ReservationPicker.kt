@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
@@ -274,6 +275,138 @@ private fun ReservationPickerPreview() {
         ReservationPicker(
             modifier = Modifier.padding(16.dp),
             onConfirm = { _, _ -> }
+        )
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DatePickerField(
+    label: String = "Select Date",
+    initialDateMillis: Long? = null,
+    onDateSelected: (LocalDate) -> Unit
+) {
+    val zone = ZoneId.systemDefault()
+    var showDate by remember { mutableStateOf(false) }
+
+    val dateState = rememberDatePickerState(
+        initialSelectedDateMillis = initialDateMillis ?: System.currentTimeMillis()
+    )
+
+    val selectedDate = Instant.ofEpochMilli(dateState.selectedDateMillis ?: System.currentTimeMillis())
+        .atZone(zone).toLocalDate()
+    val dateText = "%02d/%02d/%04d".format(selectedDate.dayOfMonth, selectedDate.monthValue, selectedDate.year)
+
+    OutlinedTextField(
+        value = dateText,
+        onValueChange = {},
+        readOnly = true,
+        label = { Text(label) },
+        trailingIcon = { Icon(Icons.Outlined.CalendarMonth, contentDescription = null) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { showDate = true }
+    )
+
+    if (showDate) {
+        DatePickerDialog(
+            onDismissRequest = { showDate = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDate = false
+                    onDateSelected(selectedDate)
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDate = false }) { Text("Cancel") }
+            }
+        ) {
+            DatePicker(state = dateState)
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TimePickerField(
+    label: String = "Select Time",
+    initialHour: Int = 11,
+    initialMinute: Int = 0,
+    onTimeSelected: (LocalTime) -> Unit
+) {
+    var showTime by remember { mutableStateOf(false) }
+    val timeState = rememberTimePickerState(initialHour, initialMinute)
+
+    val selectedTime = LocalTime.of(timeState.hour, timeState.minute)
+    val timeText = "%02d:%02d %s".format(
+        (if (selectedTime.hour % 12 == 0) 12 else selectedTime.hour % 12),
+        selectedTime.minute,
+        if (selectedTime.hour < 12) "AM" else "PM"
+    )
+
+    OutlinedTextField(
+        value = timeText,
+        onValueChange = {},
+        readOnly = true,
+        label = { Text(label) },
+        trailingIcon = { Icon(Icons.Outlined.Schedule, contentDescription = null) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { showTime = true }
+    )
+
+    if (showTime) {
+        AlertDialog(
+            onDismissRequest = { showTime = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    showTime = false
+                    onTimeSelected(selectedTime)
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTime = false }) { Text("Cancel") }
+            },
+            text = {
+                TimePicker(state = timeState)
+            }
+        )
+    }
+}
+
+
+@Preview(showBackground = true, widthDp = 400)
+@Composable
+fun DatePickerFieldPreview() {
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Selected date: $selectedDate")
+        Spacer(Modifier.height(8.dp))
+        DatePickerField(
+            label = "Arrival Date",
+            onDateSelected = { selectedDate = it }
+        )
+    }
+}
+
+
+
+@Preview(showBackground = true, widthDp = 400)
+@Composable
+fun TimePickerFieldPreview() {
+    var selectedTime by remember { mutableStateOf(LocalTime.of(11, 0)) }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Selected time: $selectedTime")
+        Spacer(Modifier.height(8.dp))
+        TimePickerField(
+            label = "Arrival Time",
+            initialHour = 11,
+            initialMinute = 0,
+            onTimeSelected = { selectedTime = it }
         )
     }
 }
