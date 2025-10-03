@@ -8,15 +8,18 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.proyecto.Navegation.Screen
 import com.example.proyecto.screens.LogIn
 import com.example.proyecto.screens.PreRegistroScreen
 import com.example.proyecto.screens.OtpScreen
 import com.example.proyecto.ui.theme.ProyectoTheme
 import com.example.proyecto.ViewModel.GeneralViewModel
+import com.example.proyecto.screens.HReservationScreen
 import com.example.proyecto.screens.ReservationScreen
 
 class MainActivity : ComponentActivity() {
@@ -98,7 +101,20 @@ fun App() {
             }
 
             // ------------------ HOSTEL RESERVATION ------------------
-            composable(Screen.HostelReservation.route) {
+            composable(Screen.HostelReservation.route,
+                arguments = listOf(navArgument("hostelId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                })) {
+                backStackEntry ->
+                val hostelId = backStackEntry.arguments?.getString("hostelId")
+                val userid =  "1234" // Replace with actual user ID retrieval logic
+                HReservationScreen(
+                    preselectedHostelId = hostelId,
+                    userId = userid,
+                    viewModel = generalViewModel
+                )
 
             }
 

@@ -1,4 +1,4 @@
-package com.example.proyecto.Components
+package com.example.proyecto.components
 
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
