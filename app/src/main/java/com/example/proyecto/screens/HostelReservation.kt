@@ -9,7 +9,7 @@ import com.example.proyecto.models.HostelList
 import com.example.proyecto.models.NewHostelReservation
 
 @Composable
-fun ReservationScreen(
+fun HReservationScreen(
     viewModel: GeneralViewModel,
     userId: String,  // <- you’ll pass this from session / token manager
     preselectedHostelId: String? = null
