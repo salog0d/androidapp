@@ -7,10 +7,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.proyecto.components.HostelCard
@@ -28,59 +31,72 @@ fun PreviewReservationScreenLayout() {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "Menu de Principal",
+                        "Menú Principal",
                         fontFamily = Gotham,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp
+                        fontSize = 22.sp // más pequeño
                     )
                 },
             )
         },
-        bottomBar = { BottomNavMenu(startRoute = "albergues") }
     ) { inner ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(inner)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        // 🔹 Esto asegura que Compose no herede escalado de texto del sistema
+        CompositionLocalProvider(
+            LocalDensity provides Density(
+                LocalDensity.current.density,
+                fontScale = 1f // Fuerza el tamaño de fuente real
+            )
         ) {
-
-            Text(
-                "Albergues disponibles",
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(Modifier.height(8.dp))
-
-            val hostelList =
-                listOf(myHostel, myHostel.copy(id = "hostel_002", name = "Valle Hostel"))
-
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(inner)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                items(hostelList) { hostel ->
-                    HostelCard(hostel)
+
+                // 🔹 Sección de Albergues
+                Text(
+                    text = "Albergues disponibles",
+                    fontFamily = Gotham,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp, // 🔹 tamaño fijo
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(Modifier.height(8.dp))
+
+                val hostelList = listOf(
+                    myHostel,
+                    myHostel.copy(id = "hostel_002", name = "Valle Hostel")
+                )
+
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(hostelList) { hostel ->
+                        HostelCard(hostel)
+                    }
                 }
-            }
 
-            Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(20.dp))
 
-            Text(
-                "Servicios disponibles",
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(Modifier.height(8.dp))
+                // 🔹 Sección de Servicios
+                Text(
+                    text = "Servicios disponibles",
+                    fontFamily = Gotham,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(Modifier.height(8.dp))
 
-            val serviceList = listOf(
-                hostelService,
-                hostelService.copy(id = "service_002", service_name = "Laundry")
-            )
+                val serviceList = listOf(
+                    hostelService,
+                    hostelService.copy(id = "service_002", service_name = "Laundry")
+                )
 
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(serviceList) { service ->
-                    ServiceCard(service)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(serviceList) { service ->
+                        ServiceCard(service)
+                    }
                 }
             }
         }

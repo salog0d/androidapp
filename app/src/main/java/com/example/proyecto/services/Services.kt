@@ -12,11 +12,10 @@ import retrofit2.http.Headers
 import retrofit2.http.POST
 import com.example.proyecto.models.PreRegForm
 import com.example.proyecto.models.PreRegResponse
-data class LoginResponse(val token: String)
-data class APIToken(
-    val access: String,
-    val refresh: String
-)
+import com.example.proyecto.models.AdminLoginRequest
+import com.example.proyecto.models.PhoneVerificationRequest
+import com.example.proyecto.models.TokenResponse
+
 
 interface Services {
 
@@ -68,6 +67,12 @@ interface Services {
     // Pre-register user
     @POST("users/pre-register/") // <-- REEMPLAZA con tu endpoint real para el pre-registro
     suspend fun enviarPreRegistro(@Body preRegData: PreRegForm): Response<PreRegResponse>
+
+    @POST("users/auth/admin-login/")
+    suspend fun adminLogin(@Body req: AdminLoginRequest): TokenResponse
+
+    @POST("users/phone-verification/verify/")
+    suspend fun userLogin(@Body req: PhoneVerificationRequest): TokenResponse
     companion object {
         private val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BASIC
@@ -93,7 +98,7 @@ interface Services {
             .build()
 
         val instance: Services = Retrofit.Builder()
-                .baseUrl("http://172.25.128.1:8001/api/") // replace with LAN IP if using emulator/device
+                .baseUrl("http://20.246.91.21:8001/api/") // replace with LAN IP if using emulator/device
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()

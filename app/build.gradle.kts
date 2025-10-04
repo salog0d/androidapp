@@ -60,6 +60,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.ui.unit)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -101,5 +103,12 @@ dependencies {
 
     implementation(libs.androidx.runtime) // o la versión que uses
     implementation(libs.material3)
+
+    // Navigation Compose
+    implementation(libs.androidx.navigation.compose.v283)
+
+    implementation(libs.androidx.material3.v130)
+    implementation(libs.ui.tooling.preview)
+    debugImplementation(libs.ui.tooling)
 
 }

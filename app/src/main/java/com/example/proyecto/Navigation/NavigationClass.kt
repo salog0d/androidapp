@@ -1,4 +1,4 @@
-package com.example.proyecto.Navegation
+package com.example.proyecto.Navigation
 
 sealed class Screen(val route: String) {
     data object Home : Screen("Home")
@@ -8,6 +8,8 @@ sealed class Screen(val route: String) {
     data object Login : Screen("Login")
     data object OTP : Screen("OTP")
     data object Register : Screen("Register")
+    data object Menu : Screen("Menu")
+
 
     // HostelReservation screen with hostelId placeholder
     data object HostelReservation : Screen("HostelReservation?hostelId={hostelId}") {

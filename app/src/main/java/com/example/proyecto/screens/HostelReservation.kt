@@ -47,7 +47,6 @@ fun HReservationScreen(
                 }
             )
         },
-        bottomBar = { BottomNavMenu(startRoute = "reservas") }
     ) { inner ->
         Column(
             modifier = Modifier

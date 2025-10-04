@@ -38,7 +38,7 @@ object Networking {
 
     // Backend local (emulador AOSP usa 10.0.2.2)
     val services: Services =
-        retrofit("http://10.0.2.2:8000/api/").create(Services::class.java)
+        retrofit("http://20.246.91.21:8001/api/").create(Services::class.java)
 
     // REST Countries (sin auth)
     val countriesApi: RestCountriesApi =
@@ -46,7 +46,7 @@ object Networking {
 
     // UserApi (con auth)
     val userApi: com.example.proyecto.services.UserApi =
-        retrofit("http://10.0.2.2:8000/api/").create(com.example.proyecto.services.UserApi::class.java)
+        retrofit("http://20.246.91.21:8001/api/").create(com.example.proyecto.services.UserApi::class.java)
 
 }
 

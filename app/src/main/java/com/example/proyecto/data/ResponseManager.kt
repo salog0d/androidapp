@@ -1,14 +1,8 @@
 package com.example.proyecto.data
 
-import com.example.proyecto.models.HostelList
-import com.example.proyecto.models.HostelServicesList
-import com.example.proyecto.models.MyHostelReservationList
-import com.example.proyecto.models.MyServiceReservationList
-import com.example.proyecto.models.NewHostelReservation
-import com.example.proyecto.models.NewServiceReservation
-import com.example.proyecto.models.PreRegResponse
-import com.example.proyecto.services.APIToken
-import com.example.proyecto.services.LoginResponse
+
+import com.example.proyecto.models.*
+
 
 sealed class ResultState<out T> {
     object Idle : ResultState<Nothing>()
