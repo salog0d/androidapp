@@ -111,13 +111,15 @@
             viewModelScope.launch {
                 _otpState.value = ResultState.Loading
                 try {
-                    val request = VerificationOTP(code = _otp.value , phone_number = _phoneNumber.value)
+                    val request = VerificationOTP(
+                        phone_number = _phoneNumber.value,
+                        code = _otp.value
+                    )
                     val response = Services.instance.verifyOtp(request)
                     if (response.isSuccessful && response.body() != null) {
                         val apiToken = response.body()!!
-                        // Save token securely
-                        TokenManager(context).saveToken(apiToken.token)
-
+                        // Guarda el access token que devuelve tu API
+                        TokenManager(context).saveToken(apiToken.access)
                         _otpState.value = ResultState.Success(apiToken)
                     } else {
                         _otpState.value = ResultState.Error(response.message())
@@ -127,7 +129,6 @@
                 }
             }
         }
-
 
         fun fetchHostels() {
             viewModelScope.launch {

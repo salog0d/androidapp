@@ -1,4 +1,3 @@
-// MainActivity.kt
 package com.example.proyecto
 
 import android.os.Bundle
@@ -16,6 +15,15 @@ import com.example.proyecto.screens.PreRegistroScreen
 import com.example.proyecto.screens.OtpScreen
 import com.example.proyecto.ui.theme.ProyectoTheme
 import com.example.proyecto.ViewModel.GeneralViewModel
+import com.example.proyecto.screens.ReservationFormScreen
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import com.example.proyecto.data.ResultState
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,32 +56,46 @@ fun App() {
                 PreRegistroScreen(
                     generalViewModel = generalViewModel,
                     onDone = {
-                        // cuando el pre-registro sea exitoso
                         nav.navigate("otp") {
                             popUpTo("preregister") { inclusive = true }
                         }
                     },
-                    onBack = {
-                        nav.popBackStack()
-                    }
+                    onBack = { nav.popBackStack() }
                 )
             }
             composable("otp") {
+                val otpState by generalViewModel.otpState.collectAsState()
+                val context = LocalContext.current
+
                 OtpScreen(
                     onOtpSubmit = { code ->
                         generalViewModel.updateOTP(code)
-                        // aquí puedes llamar generalViewModel.verifyOTP(context) si lo necesitas
-                        nav.navigate("home") {
-                            popUpTo("otp") { inclusive = true }
-                        }
+                        generalViewModel.verifyOTP(context = context)
                     },
                     onResend = {
                         generalViewModel.verifyLogin()
                     }
                 )
+
+                when (otpState) {
+                    is ResultState.Loading -> {
+                        CircularProgressIndicator()
+                    }
+                    is ResultState.Success<*> -> {
+                        LaunchedEffect(Unit) {
+                            nav.navigate("home") {
+                                popUpTo("otp") { inclusive = true }
+                            }
+                        }
+                    }
+                    is ResultState.Error -> {
+                        Text("OTP inválido o error de red")
+                    }
+                    else -> {}
+                }
             }
             composable("home") {
-                // TODO: tu pantalla Home
+                ReservationFormScreen()
             }
         }
     }

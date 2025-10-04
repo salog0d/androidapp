@@ -13,7 +13,10 @@ import retrofit2.http.POST
 import com.example.proyecto.models.PreRegForm
 import com.example.proyecto.models.PreRegResponse
 data class LoginResponse(val token: String)
-data class APIToken(val token: String)
+data class APIToken(
+    val access: String,
+    val refresh: String
+)
 
 interface Services {
 
@@ -90,7 +93,7 @@ interface Services {
             .build()
 
         val instance: Services = Retrofit.Builder()
-            .baseUrl("http://192.168.100.234:8001/api/") // replace with LAN IP if using emulator/device
+                .baseUrl("http://172.25.128.1:8001/api/") // replace with LAN IP if using emulator/device
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()

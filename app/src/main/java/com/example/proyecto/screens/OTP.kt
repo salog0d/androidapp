@@ -51,10 +51,10 @@ fun OtpScreen(
 
         // Submit Button
         Button(
-            onClick = { if (otp.length == 4) onOtpSubmit(otp) },
+            onClick = { if (otp.length == 6) onOtpSubmit(otp) },
             modifier = Modifier.fillMaxWidth(0.9f)
         ) {
-            Text("Submit")
+            Text("Enviar Codigo")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
