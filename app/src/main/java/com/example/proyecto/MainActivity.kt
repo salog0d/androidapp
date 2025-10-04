@@ -1,3 +1,4 @@
+// MainActivity.kt
 package com.example.proyecto
 
 import android.os.Bundle
@@ -7,23 +8,19 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.proyecto.Navegation.Screen
 import com.example.proyecto.screens.LogIn
 import com.example.proyecto.screens.PreRegistroScreen
 import com.example.proyecto.screens.OtpScreen
 import com.example.proyecto.ui.theme.ProyectoTheme
 import com.example.proyecto.ViewModel.GeneralViewModel
-import com.example.proyecto.screens.ReservationFormScreen
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalContext
-import com.example.proyecto.data.ResultState
-
+import com.example.proyecto.screens.HReservationScreen
+import com.example.proyecto.screens.ReservationScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,63 +36,116 @@ fun App() {
         val nav = rememberNavController()
         val generalViewModel: GeneralViewModel = viewModel()
 
-        NavHost(navController = nav, startDestination = "login") {
-            composable("login") {
+        NavHost(navController = nav, startDestination = Screen.Login.route) {
+
+            // ------------------ LOGIN ------------------
+            composable(Screen.Login.route) {
                 LogIn(
                     OnLogIn = {
-                        nav.navigate("home") {
-                            popUpTo("login") { inclusive = true }
+                        // 👉 After login, go to OTP instead of Home
+                        nav.navigate(Screen.OTP.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
                         }
                     },
                     Preregister = {
-                        nav.navigate("preregister")
-                    }
+                        nav.navigate(Screen.Register.route)
+                    },
+                    VM = generalViewModel
                 )
             }
-            composable("preregister") {
+
+            // ------------------ REGISTER ------------------
+            composable(Screen.Register.route) {
                 PreRegistroScreen(
                     generalViewModel = generalViewModel,
                     onDone = {
-                        nav.navigate("otp") {
-                            popUpTo("preregister") { inclusive = true }
+                        nav.navigate(Screen.OTP.route) {
+                            popUpTo(Screen.Register.route) { inclusive = true }
                         }
                     },
                     onBack = { nav.popBackStack() }
                 )
             }
-            composable("otp") {
-                val otpState by generalViewModel.otpState.collectAsState()
-                val context = LocalContext.current
 
+            // ------------------ OTP ------------------
+            composable(Screen.OTP.route) {
                 OtpScreen(
                     onOtpSubmit = { code ->
                         generalViewModel.updateOTP(code)
-                        generalViewModel.verifyOTP(context = context)
+                        // After successful OTP validation -> go to Home
+                        nav.navigate(Screen.Home.route) {
+                            popUpTo(Screen.OTP.route) { inclusive = true }
+                        }
                     },
-                    onResend = {
-                        generalViewModel.verifyLogin()
-                    }
+                    onResend = { generalViewModel.verifyLogin() }
+                )
+            }
+
+            // ------------------ HOME ------------------
+
+
+            // ------------------ RESERVATION ------------------
+            composable(Screen.Reservation.route) {
+                ReservationScreen(
+                    onClickHostel = {
+                        nav.navigate(Screen.HostelReservation.createRoute()) // no hostelId
+                    },
+                    onClickService = {
+                        nav.navigate(Screen.ServiceReservation.createRoute()) // no serviceId
+                    },
+                    onBack = { nav.popBackStack() }
                 )
 
-                when (otpState) {
-                    is ResultState.Loading -> {
-                        CircularProgressIndicator()
-                    }
-                    is ResultState.Success<*> -> {
-                        LaunchedEffect(Unit) {
-                            nav.navigate("home") {
-                                popUpTo("otp") { inclusive = true }
-                            }
-                        }
-                    }
-                    is ResultState.Error -> {
-                        Text("OTP inválido o error de red")
-                    }
-                    else -> {}
-                }
+
+
             }
-            composable("home") {
-                ReservationFormScreen()
+
+            // ------------------ HOSTEL RESERVATION ------------------
+            composable(Screen.HostelReservation.route,
+                arguments = listOf(navArgument("hostelId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                })) {
+                backStackEntry ->
+                val hostelId = backStackEntry.arguments?.getString("hostelId")
+                val userid =  "1234" // Replace with actual user ID retrieval logic
+                HReservationScreen(
+                    preselectedHostelId = hostelId,
+                    userId = userid,
+                    viewModel = generalViewModel
+                )
+
+            }
+
+
+            // ------------------ SERVICE RESERVATION ------------------
+            composable(Screen.ServiceReservation.route) {
+
+            }
+
+
+            // ------------------ HOSTEL INFO ------------------
+            composable(Screen.HostelInfo.route) {
+
+            }
+
+
+            // ------------------ SERVICE INFO ------------------
+            composable(Screen.ServiceInfo.route) {
+
+            }
+
+
+            // ------------------ HISTORIAL ------------------
+            composable(Screen.Historial.route) {
+
+            }
+
+
+            // ------------------ PROFILE ------------------
+            composable(Screen.Profile.route) {
+
             }
         }
     }
